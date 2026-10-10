@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #4da6e8;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 40px 50px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 36px;
+    }
+
+    p.subtitle {
+      margin: 0 0 30px 0;
+      font-size: 18px;
+    }
+
+    .add-task {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .add-task input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 6px;
+      background: transparent;
+      color: #ffffff;
+      outline: none;
+    }
+
+    .add-task input::placeholder {
+      color: #e6f2fc;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #4da6e8;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: transparent;
+      color: #ffffff;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      font-size: 18px;
+    }
+
+    li span {
+      cursor: pointer;
+    }
+
+    li.done span {
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    .delete-btn {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+
+    .count {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Task Manager</h1>
+  <p class="subtitle">Click a task to mark it as done.</p>
+
+  <div class="add-task">
+    <input type="text" id="taskInput" placeholder="Enter a new task...">
+    <button onclick="addTask()">Add Task</button>
+  </div>
+
+  <ul id="taskList"></ul>
+  <div class="count" id="count"></div>
+
+  <script>
+    let tasks = [];
+
+    try {
+      tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    } catch (e) {
+      tasks = [];
+    }
+
+    function save() {
+      try {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      } catch (e) {}
+    }
+
+    function render() {
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        if (task.done) li.classList.add("done");
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+        span.onclick = () => toggleTask(index);
+
+        const del = document.createElement("button");
+        del.textContent = "Delete";
+        del.className = "delete-btn";
+        del.onclick = () => deleteTask(index);
+
+        li.appendChild(span);
+        li.appendChild(del);
+        list.appendChild(li);
+      });
+
+      const remaining = tasks.filter(t => !t.done).length;
+      document.getElementById("count").textContent =
+        remaining + " task(s) remaining";
+    }
+
+    function addTask() {
+      const input = document.getElementById("taskInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.push({ text: text, done: false });
+      input.value = "";
+      save();
+      render();
+    }
+
+    function toggleTask(index) {
+      tasks[index].done = !tasks[index].done;
+      save();
+      render();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      save();
+      render();
+    }
+
+    document.getElementById("taskInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") addTask();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
